@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const asyncHandler = require('../asyncHandler');
-const { haversineKm, estimateEtaMinutes, estimatePrice, rankVendors } = require('../matching');
+const { haversineKm, estimateEtaMinutes, estimatePrice, rankVendors, MAX_SEARCH_RADIUS_KM } = require('../matching');
 const VALID_SERVICE_TYPES = require('../serviceTypes');
 const { safeNotify } = require('../notifications');
 const { initiateRefundForPayment } = require('../refunds');
@@ -106,6 +106,18 @@ router.post(
     if (!vendor) return res.status(400).json({ error: 'Vendor is not available' });
 
     const distanceKm = haversineKm(job.driver_lat, job.driver_lng, vendor.lat, vendor.lng);
+
+    // Defense in depth: the ranked nearby-vendors list already only ever
+    // offers vendors within the expanding search radius (see rankVendors
+    // in src/matching.js), so this shouldn't normally trigger — but a
+    // direct API call (or a re-match against a stale list) shouldn't be
+    // able to bypass the same radius rule that applies everywhere else.
+    if (distanceKm > MAX_SEARCH_RADIUS_KM) {
+      return res.status(400).json({
+        error: `That vendor is ${Math.round(distanceKm)}km away — outside the ${MAX_SEARCH_RADIUS_KM}km service radius`,
+      });
+    }
+
     const existingPayment = await db('payments').where({ job_id: job.id, status: 'completed' }).first();
 
     const updates = {

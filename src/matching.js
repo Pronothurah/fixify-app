@@ -6,6 +6,16 @@
  * this finds available vendors offering that service and ranks them by
  * straight-line distance, then estimates a drive ETA and a rough price.
  *
+ * Matching is radius-bound, Uber-style: rather than always returning the
+ * "nearest N regardless of distance" (which could pair a Kilimani driver
+ * with the only vendor available 60km away in Machakos), this searches an
+ * expanding ring of radii — tight and urban first, widening only if
+ * nothing's found — and gives up (empty result) past the widest ring
+ * rather than matching across the whole metro area. This is symmetric by
+ * construction: since a vendor is only ever offered a job through this same
+ * search, a vendor also never gets shown a request that's unreasonably far
+ * from them — no separate "vendor side" filter needed.
+ *
  * NOTE: ETA and pricing are simple heuristics (avg speed + flat per-km
  * rate), not real routing. Swapping in a real routing/maps API later only
  * requires changing estimateEtaMinutes/estimatePrice — the ranking query
@@ -16,6 +26,16 @@ const EARTH_RADIUS_KM = 6371;
 const AVG_SPEED_KMH = 28; // rough Nairobi urban-traffic-adjusted average
 const BASE_FARE_KES = 500;
 const PER_KM_RATE_KES = 250;
+
+// Expanding search radius (km), tightest first — mirrors Uber's dispatch
+// search widening in rings until a driver is found, rather than a single
+// flat cutoff. 5km covers a dense ask like "anywhere in Kilimani/CBD"; the
+// widest ring (60km) is sized to just cover genuine end-to-end trips across
+// the Nairobi Metro area (e.g. Thika to Karen) without reaching arbitrarily
+// far. Nothing within even the widest ring means a real "no vendors nearby"
+// rather than a match that doesn't make practical sense.
+const SEARCH_RADIUS_TIERS_KM = [5, 10, 20, 35, 60];
+const MAX_SEARCH_RADIUS_KM = SEARCH_RADIUS_TIERS_KM[SEARCH_RADIUS_TIERS_KM.length - 1];
 
 function toRad(deg) {
   return (deg * Math.PI) / 180;
@@ -71,7 +91,17 @@ async function rankVendors(db, { lat, lng, serviceType, excludeVendorIds = [], l
     })
     .sort((a, b) => a.distance_km - b.distance_km);
 
-  return ranked.slice(0, limit);
+  // Expanding radius search: use the tightest ring that actually has
+  // someone in it, rather than always returning the closest N irrespective
+  // of how far "closest" actually is.
+  for (const radiusKm of SEARCH_RADIUS_TIERS_KM) {
+    const withinRadius = ranked.filter((v) => v.distance_km <= radiusKm);
+    if (withinRadius.length) {
+      return withinRadius.slice(0, limit);
+    }
+  }
+
+  return []; // nobody within even the widest search radius
 }
 
 module.exports = {
@@ -79,4 +109,6 @@ module.exports = {
   estimateEtaMinutes,
   estimatePrice,
   rankVendors,
+  SEARCH_RADIUS_TIERS_KM,
+  MAX_SEARCH_RADIUS_KM,
 };
