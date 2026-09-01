@@ -48,7 +48,7 @@ fixify-app/                 ← you are here; the real, self-contained project
 │       └── calls.js              call signaling (place, poll, accept/decline/end)
 ├── migrations/                  users / vendors / vendor_services / jobs / vendor approval fields /
 │                                 notifications / payments / calls / payouts
-├── seeds/                       14 sample vendor profiles across Nairobi + metro area (pre-approved)
+├── seeds/                       107 sample vendor profiles, pooled across all 42 covered areas (pre-approved)
 └── public/
     └── index.html                the live demo app (driver + vendor + signup + admin screens)
 
@@ -137,7 +137,7 @@ Requires Node.js (v18+ recommended). From inside this folder (`fixify-app/`):
 
 ```bash
 npm install
-npm run setup      # runs migrations, then seeds 14 sample vendors across Nairobi + metro area (pre-approved)
+npm run setup      # runs migrations, then seeds 107 sample vendors, pooled across all 42 covered areas (pre-approved)
 npm start
 ```
 
@@ -336,7 +336,7 @@ All 5 originally scoped MVP phases below have a working, demoable implementation
 - Real haversine-based geolocation matching, ranked by distance, with ETA/price estimates
 - Endpoints for creating requests, listing ranked nearby vendors, selecting/accepting/declining, advancing job status, polling status
 - Frontend rewired to hit the real API — two browser tabs (driver + vendor) now sync through a real shared database
-- Seed data: 14 sample vendors with real approximate coordinates, covering Nairobi County plus the wider metro area (see Phase 7)
+- Seed data: 107 sample vendors with real approximate coordinates, pooled across all 42 covered areas — see Phase 7
 
 **Phase 3 — Vendor & driver onboarding** 🟡 In progress
 - ✅ Vendor self-registration form (name, phone, service type(s), coverage neighborhood, ID/plate verification field) → lands as `pending`
@@ -395,5 +395,7 @@ All 5 originally scoped MVP phases below have a working, demoable implementation
 - ✅ **Fixed a real bug**: the driver's detected location always displayed as "X, Nairobi" regardless of where X actually was — verified live that a GPS position near Thika now correctly labels as "Thika, Kiambu", Machakos as "Machakos, Machakos", Rongai as "Rongai, Kajiado", not falsely "Nairobi"
 - ✅ Driver's *actual* coordinates (real device GPS via `navigator.geolocation`, already wired up) are what's sent for matching — the neighborhood name was always display-only, never fed into the haversine distance calculation
 - ✅ 6 new seed vendors added across the newly-covered towns (Thika, Ruiru, Ngong, Rongai, Kitengela, Machakos) so the expanded coverage is actually demoable, not just theoretically supported — verified live: a request from real Thika coordinates correctly ranks the Thika-based vendor first at 0.2km, with central-Nairobi vendors correctly showing 39-50km away
+- ✅ **Seed pool grown to 107 vendors, every one of the 42 covered areas gets at least 2** (`seeds/01_vendors.js`) — the original 14 named vendors stayed untouched (same phone numbers the README's demo checklist references), and a generator fills in the rest by pulling area coordinates directly from `NEIGHBORHOODS` in `src/neighborhoods.js`, so vendor coverage can never silently drift out of sync with the area list again — add a town there and it gets vendors here automatically on the next reseed. High-traffic hubs (CBD, Westlands, Karen, etc.) get a slightly larger pool. Verified live: 107 vendors, zero duplicate phone numbers, zero duplicate ID numbers, all 42 areas present with 2-4 vendors each, and a real match test in South C — an area with zero coverage before this — correctly returned nearby vendors
+- ✅ Fixed a real data bug found while doing this: 4 of the 6 previously-added metro vendors had `id_number` values copy-pasted from the original 8 (e.g. two different vendors both had `23456781`) — corrected to unique values
 - ✅ **Matching capped to a reasonable radius** (Uber-style expanding search, see "Matching" in Architecture above) — wider coverage otherwise meant a Kilimani driver could get matched to the only available vendor 60km away in Machakos just because they were technically "nearest." Verified live: a normal in-radius request still returns multiple ranked candidates; a request 15km from the nearest vendor correctly widens past an empty tighter ring rather than returning nothing; a request nowhere near any vendor (test used Mombasa, ~440km out) correctly returns an empty list instead of a nonsensical match; and a direct API call trying to select a vendor 441km away is rejected with a clear radius error even though it bypasses the ranked list entirely
 - ⬜ ETA/pricing still use one flat average-speed constant (`AVG_SPEED_KMH` in `src/matching.js`) regardless of trip type — a 40km CBD-to-Machakos highway trip and a 2km CBD-to-CBD trip in traffic get the same km/h assumption. Not fixed here; flagged as a known heuristic limitation, same spirit as the existing "not a real routing engine" caveat
