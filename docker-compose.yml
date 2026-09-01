@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fixify
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: fixify
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Not published to the host on purpose — only the app container talks to
+    # Postgres, over the compose network. Nothing external needs direct DB access.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fixify"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://fixify:${POSTGRES_PASSWORD}@db:5432/fixify
+    ports:
+      # Bound to localhost only — Nginx (running on the host, see DEPLOY.md)
+      # is what's actually reachable from the internet on 80/443, and it
+      # proxies to this. The app itself is never directly internet-facing.
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,0 +1,5 @@
+node_modules
+fixify.sqlite3
+.env
+npm-debug.log
+.git

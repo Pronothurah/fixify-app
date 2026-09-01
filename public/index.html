@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fixify — Roadside Assistance, On Demand</title>
+<style>
+  :root{
+    --orange:#FF5A1F;
+    --orange-dark:#E64A0F;
+    --red:#E8412B;
+    --dark:#181822;
+    --dark-2:#26263A;
+    --gray:#6B6B7B;
+    --gray-light:#9A9AAA;
+    --bg:#F6F5F3;
+    --card:#FFFFFF;
+    --line:#ECEAE6;
+    --green:#22C55E;
+    --amber:#F5A623;
+    --shadow: 0 8px 24px rgba(24,24,34,0.10);
+    --shadow-sm: 0 2px 8px rgba(24,24,34,0.08);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#EDEBFF 0%, #F6F5F3 40%);
+    color:var(--dark);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .phone{
+    width:100%;
+    max-width:412px;
+    background:var(--bg);
+    border-radius:38px;
+    box-shadow:0 30px 60px rgba(24,24,34,0.25), 0 0 0 10px #111116;
+    overflow:hidden;
+    position:relative;
+    min-height:860px;
+    display:flex;
+    flex-direction:column;
+  }
+  .statusbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 24px 4px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--dark);
+    background:transparent;
+    flex-shrink:0;
+  }
+  .statusbar .dot-cluster{display:flex; gap:4px; align-items:center;}
+  .app-body{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  .screen{
+    display:none;
+    flex-direction:column;
+    height:100%;
+    animation:fadeIn .28s ease;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    -ms-overflow-style:none;
+    scrollbar-width:none;
+  }
+  .scroll::-webkit-scrollbar{display:none;}
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:6px 20px 14px;
+    flex-shrink:0;
+  }
+  .backbtn{
+    width:36px;height:36px;border-radius:50%;
+    background:var(--card);
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px; cursor:pointer; color:var(--dark);
+    box-shadow:var(--shadow-sm);
+  }
+  .topbar h2{margin:0; font-size:17px; font-weight:700;}
+
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:16px 20px;
+    border-radius:16px;
+    font-size:16px;
+    font-weight:700;
+    border:none;
+    cursor:pointer;
+    width:100%;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:linear-gradient(135deg,var(--orange),var(--red)); color:#fff; box-shadow:0 10px 24px rgba(232,65,43,0.32);}
+  .btn-secondary{background:var(--card); color:var(--dark); border:1.5px solid var(--line);}
+  .btn-dark{background:var(--dark); color:#fff;}
+  .btn-outline{background:transparent; border:1.5px solid rgba(255,255,255,0.5); color:#fff;}
+  .btn-sm{padding:10px 14px; font-size:13px; border-radius:12px;}
+  .btn-ghost{background:transparent; color:var(--gray); font-weight:600; border:none;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  .btn-green{background:var(--green); color:#fff;}
+  .btn-red-outline{background:#fff; color:var(--red); border:1.5px solid #F8CFC7;}
+
+  #screen-landing{justify-content:space-between;}
+  .landing-hero{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:20px 30px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,90,31,0.16), transparent 55%),
+      radial-gradient(circle at 80% 80%, rgba(232,65,43,0.12), transparent 55%);
+  }
+  .logo-mark{
+    width:88px;height:88px;border-radius:26px;
+    background:linear-gradient(135deg,var(--orange),var(--red));
+    display:flex;align-items:center;justify-content:center;
+    font-size:42px;
+    box-shadow:0 16px 30px rgba(232,65,43,0.35);
+    margin-bottom:18px;
+  }
+  .brand-name{font-size:34px; font-weight:800; letter-spacing:-0.5px; margin:0;}
+  .brand-tag{color:var(--gray); font-size:15px; margin:8px 0 0; max-width:280px; line-height:1.4;}
+  .landing-actions{padding:20px 24px 30px; display:flex; flex-direction:column; gap:12px;}
+  .role-switch{
+    display:flex; justify-content:center; gap:6px; padding:14px 24px 0; flex-shrink:0;
+  }
+  .role-pill{
+    font-size:12px; font-weight:600; color:var(--gray-light);
+    padding:6px 12px; border-radius:20px; cursor:pointer; border:1px solid var(--line); background:var(--card);
+  }
+  .role-pill.active{background:var(--dark); color:#fff; border-color:var(--dark);}
+
+  .service-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    padding:8px 20px 20px;
+  }
+  .service-card{
+    background:var(--card);
+    border:1.5px solid var(--line);
+    border-radius:16px;
+    padding:18px 14px;
+    text-align:left;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+  }
+  .service-card:active{transform:scale(0.97);}
+  .service-card.selected{border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,90,31,0.15);}
+  .service-card .icon{font-size:26px;}
+  .service-card .label{font-weight:700; font-size:14px; color:var(--dark);}
+  .service-card .sub{font-size:11.5px; color:var(--gray-light);}
+  .section-intro{padding:2px 20px 6px;}
+  .section-intro h1{font-size:22px; margin:0 0 4px; font-weight:800;}
+  .section-intro p{margin:0; color:var(--gray); font-size:14px;}
+  .sticky-footer{padding:14px 20px 22px; flex-shrink:0; background:linear-gradient(180deg, rgba(246,245,243,0), var(--bg) 30%);}
+
+  .name-field{margin:10px 20px 4px;}
+  .name-field label{font-size:11.5px; color:var(--gray-light); font-weight:700; display:block; margin-bottom:5px; text-transform:uppercase; letter-spacing:.4px;}
+  .name-field input, .name-field select{width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-size:14px; outline:none; background:var(--card); color:var(--dark);}
+  .name-field input:focus, .name-field select:focus{border-color:var(--orange);}
+  .chip-grid{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{
+    border:1.5px solid var(--line); border-radius:20px; padding:8px 14px; font-size:13px; font-weight:600;
+    cursor:pointer; background:var(--card); color:var(--dark);
+  }
+  .chip.selected{border-color:var(--orange); background:rgba(255,90,31,0.08); color:var(--orange-dark);}
+  .admin-link-row{text-align:center; padding:10px 0 0;}
+  .admin-link-row span{font-size:10.5px; color:var(--gray-light); cursor:pointer; text-decoration:underline;}
+
+  .notif-bell{position:relative; font-size:18px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px;}
+  .notif-badge{
+    position:absolute; top:0; right:0; min-width:16px; height:16px; border-radius:8px;
+    background:var(--red); color:#fff; font-size:9.5px; font-weight:800; line-height:16px; text-align:center; padding:0 4px;
+    display:none;
+  }
+  .notif-bell.on-dark{color:#fff;}
+  .notif-item{padding:10px 12px; border-radius:12px; margin-bottom:8px;}
+  .notif-item .t{font-weight:700; font-size:13px;}
+  .notif-item .b{font-size:12.5px; color:var(--gray); margin-top:2px;}
+  .notif-item .a{font-size:10.5px; color:var(--gray-light); margin-top:4px;}
+
+  .locating-wrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; text-align:center;}
+  .pulse-ring{
+    width:96px;height:96px;border-radius:50%;
+    background:rgba(255,90,31,0.12);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+    margin-bottom:22px;
+  }
+  .pulse-ring::before, .pulse-ring::after{
+    content:'';position:absolute;inset:0;border-radius:50%;
+    border:2px solid rgba(255,90,31,0.35);
+    animation:pulseOut 1.8s ease-out infinite;
+  }
+  .pulse-ring::after{animation-delay:.6s;}
+  @keyframes pulseOut{0%{transform:scale(0.7); opacity:1;}100%{transform:scale(1.9); opacity:0;}}
+  .pulse-ring .dot{width:22px;height:22px;border-radius:50%;background:var(--orange); box-shadow:0 0 0 6px #fff;}
+  .locating-wrap h3{margin:0 0 6px; font-size:18px; font-weight:700;}
+  .locating-wrap p{margin:0; color:var(--gray); font-size:13.5px; max-width:260px;}
+  .loc-result{
+    margin-top:22px; width:100%; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:14px 16px; text-align:left; display:none;
+  }
+  .loc-result.show{display:block; animation:fadeIn .3s ease;}
+  .loc-result .row{display:flex; align-items:center; gap:10px;}
+  .loc-result .pin{font-size:18px;}
+  .loc-result strong{font-size:14.5px;}
+  .loc-result .coords{font-size:11px; color:var(--gray-light); margin-top:4px; padding-left:28px;}
+  .mock-loc-link{font-size:11.5px; color:var(--gray-light); text-decoration:underline; cursor:pointer; margin-top:10px; padding-left:28px;}
+
+  .map-wrap{
+    position:relative;
+    height:290px;
+    flex-shrink:0;
+    background: linear-gradient(#EFEFF4,#EFEFF4);
+    overflow:hidden;
+    border-bottom:1px solid var(--line);
+  }
+  .map-blob{position:absolute; border-radius:40%; opacity:.5;}
+  .hood-label{
+    position:absolute; font-size:9.5px; font-weight:700; color:#B9B9C6;
+    text-transform:uppercase; letter-spacing:.4px;
+  }
+  .map-pin{
+    position:absolute;
+    transform:translate(-50%,-100%);
+    display:flex; flex-direction:column; align-items:center;
+    cursor:pointer;
+    z-index:3;
+  }
+  .map-pin .bubble{
+    width:34px;height:34px;border-radius:50% 50% 50% 0;
+    background:var(--dark-2);
+    transform:rotate(45deg);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-sm);
+    border:2px solid #fff;
+  }
+  .map-pin .bubble span{transform:rotate(-45deg); font-size:15px;}
+  .map-pin.me .bubble{background:linear-gradient(135deg,var(--orange),var(--red));}
+  .map-pin.selected .bubble{background:var(--green);}
+  .map-pin .eta-chip{
+    margin-top:3px;
+    background:#fff; border-radius:8px; padding:2px 6px;
+    font-size:9.5px; font-weight:700; box-shadow:var(--shadow-sm); white-space:nowrap;
+  }
+  .me-pulse{
+    position:absolute; width:20px; height:20px; border-radius:50%;
+    background:rgba(255,90,31,0.35);
+    transform:translate(-50%,-50%);
+    z-index:2;
+  }
+  .me-pulse::before{
+    content:'';position:absolute; inset:-14px; border-radius:50%;
+    border:2px solid rgba(255,90,31,0.3);
+    animation:pulseOut 2s ease-out infinite;
+  }
+  .route-line{position:absolute; z-index:1;}
+
+  .vendor-list{padding:12px 16px 16px; display:flex; flex-direction:column; gap:10px;}
+  .list-heading{display:flex; align-items:center; justify-content:space-between; padding:10px 20px 2px; gap:8px;}
+  .list-heading h4{margin:0; font-size:13px; color:var(--gray); font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
+  .list-heading .right{display:flex; align-items:center; gap:8px;}
+  .list-heading span.count{font-size:12px; color:var(--gray-light);}
+  .live-badge{font-size:9.5px; font-weight:800; color:#16A34A; background:rgba(34,197,94,0.12); padding:3px 8px; border-radius:8px; display:inline-flex; align-items:center; gap:4px; letter-spacing:.3px;}
+  .live-badge .dot{width:5px;height:5px;border-radius:50%;background:#16A34A;animation:blink 1.2s infinite;}
+  .vendor-card{
+    background:var(--card); border:1.5px solid var(--line); border-radius:16px;
+    padding:14px; display:flex; gap:12px; align-items:center; cursor:pointer;
+    transition:border-color .15s ease;
+  }
+  .vendor-card.selected{border-color:var(--orange); box-shadow:0 0 0 3px rgba(255,90,31,0.13);}
+  .avatar{
+    width:46px;height:46px;border-radius:14px;
+    background:linear-gradient(135deg,#3A3A52,#20202E);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px; color:#fff; flex-shrink:0;
+  }
+  .vendor-info{flex:1; min-width:0;}
+  .vendor-info .name{font-weight:700; font-size:14.5px; display:flex; align-items:center; gap:6px;}
+  .vendor-info .meta{font-size:12px; color:var(--gray); margin-top:2px; display:flex; gap:8px; flex-wrap:wrap;}
+  .rating{color:var(--amber); font-weight:700; font-size:12px;}
+  .badge{font-size:10px; font-weight:700; background:#F0F3FF; color:#4C5FE8; padding:2px 7px; border-radius:8px;}
+  .vendor-side{text-align:right; flex-shrink:0;}
+  .vendor-side .eta{font-weight:800; font-size:15px; color:var(--dark);}
+  .vendor-side .dist{font-size:11px; color:var(--gray-light);}
+  .empty-state{padding:60px 30px; text-align:center; color:var(--gray-light);}
+  .empty-state .icon{font-size:40px; margin-bottom:10px;}
+
+  .confirm-map{height:220px; flex-shrink:0;}
+  .confirm-sheet{
+    flex:1; background:var(--card); border-radius:26px 26px 0 0;
+    margin-top:-20px; position:relative; z-index:5;
+    padding:22px 20px 20px; box-shadow:0 -10px 30px rgba(0,0,0,0.06);
+    display:flex; flex-direction:column;
+  }
+  .status-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(34,197,94,0.12); color:#16A34A; font-weight:700; font-size:12.5px;
+    padding:6px 12px; border-radius:20px; align-self:flex-start; margin-bottom:14px;
+  }
+  .status-chip .blip{width:7px;height:7px;border-radius:50%; background:#16A34A; animation:blink 1.2s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .eta-big{font-size:15px; color:var(--gray); margin-bottom:2px;}
+  .eta-big b{font-size:26px; color:var(--dark); font-weight:800;}
+  .vendor-hero{display:flex; align-items:center; gap:14px; padding:16px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin:14px 0;}
+  .vendor-hero .avatar{width:56px;height:56px; font-size:24px; border-radius:16px;}
+  .vendor-hero .name{font-weight:800; font-size:16px;}
+  .vendor-hero .sub{font-size:12.5px; color:var(--gray); margin-top:3px;}
+  .plate{
+    display:inline-block; margin-top:6px; font-size:11px; font-weight:700; letter-spacing:1px;
+    background:var(--dark); color:#fff; padding:3px 8px; border-radius:6px;
+  }
+  .action-row{display:flex; gap:10px; margin-top:auto; padding-top:6px;}
+  .action-row .btn{flex:1;}
+  .cancel-link{text-align:center; margin-top:14px; font-size:13px; color:var(--gray-light); font-weight:600; cursor:pointer;}
+  .sim-link{text-align:center; margin-top:8px; font-size:11px; color:var(--gray-light); cursor:pointer; text-decoration:underline;}
+
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(20,20,30,0.45); z-index:50;
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-sheet{
+    background:#fff; width:100%; border-radius:22px 22px 0 0; padding:18px 18px 22px;
+    max-height:70%; display:flex; flex-direction:column;
+  }
+  .modal-sheet h4{margin:0 0 12px;}
+  .chat-log{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:12px; max-height:180px;}
+  .msg{max-width:78%; padding:9px 12px; border-radius:14px; font-size:13.5px;}
+  .msg.me{align-self:flex-end; background:var(--orange); color:#fff; border-bottom-right-radius:4px;}
+  .msg.them{align-self:flex-start; background:#F0F0F3; color:var(--dark); border-bottom-left-radius:4px;}
+  .chat-input-row{display:flex; gap:8px;}
+  .chat-input-row input{flex:1; border:1.5px solid var(--line); border-radius:12px; padding:11px 14px; font-size:14px; outline:none;}
+  .chat-input-row button{background:var(--orange); color:#fff; border:none; border-radius:12px; padding:0 16px; font-weight:700; cursor:pointer;}
+
+  .call-sheet{align-items:center; text-align:center; padding:34px 24px 26px;}
+  .call-avatar{
+    width:84px; height:84px; border-radius:50%; background:#F0F0F3; display:flex; align-items:center;
+    justify-content:center; font-size:38px; margin:0 auto 16px; position:relative;
+  }
+  .call-avatar.ringing::after{
+    content:''; position:absolute; inset:-8px; border-radius:50%; border:2.5px solid var(--orange);
+    opacity:.5; animation:callPulse 1.2s ease-out infinite;
+  }
+  @keyframes callPulse{
+    0%{transform:scale(0.9); opacity:.6;}
+    100%{transform:scale(1.35); opacity:0;}
+  }
+  .call-name{font-size:17px; font-weight:700; color:var(--dark); margin-bottom:4px;}
+  .call-status{font-size:13.5px; color:var(--gray-light); margin-bottom:26px;}
+  .call-end-btn{
+    width:58px; height:58px; border-radius:50%; background:#EF4444; color:#fff; border:none;
+    font-size:22px; cursor:pointer; box-shadow:0 8px 18px rgba(239,68,68,0.35);
+  }
+  .call-actions-row{display:flex; gap:28px; justify-content:center;}
+  .call-accept-btn{
+    width:58px; height:58px; border-radius:50%; background:#22C55E; color:#fff; border:none;
+    font-size:22px; cursor:pointer; box-shadow:0 8px 18px rgba(34,197,94,0.35);
+  }
+
+  .done-wrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; text-align:center;}
+  .done-check{width:78px;height:78px;border-radius:50%; background:rgba(34,197,94,0.12); display:flex; align-items:center; justify-content:center; font-size:38px; margin-bottom:18px;}
+  .stars{display:flex; gap:8px; margin:18px 0 6px; font-size:32px;}
+  .star{cursor:pointer; color:#E2E1E8; transition:color .15s;}
+  .star.on{color:var(--amber);}
+
+  .vd-header{
+    background:var(--dark); color:#fff; padding:18px 20px 22px; border-radius:0 0 24px 24px; flex-shrink:0;
+  }
+  .vd-header-top{display:flex; justify-content:space-between; align-items:center;}
+  .vd-header h3{margin:0; font-size:17px;}
+  .vd-header .sub{font-size:12px; color:#A0A0B4; margin-top:2px;}
+  .online-toggle{display:flex; align-items:center; gap:8px;}
+  .switch{width:42px; height:24px; background:#3A3A50; border-radius:20px; position:relative; cursor:pointer; transition:background .2s;}
+  .switch.on{background:var(--green);}
+  .switch .knob{position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; transition:left .2s;}
+  .switch.on .knob{left:20px;}
+  .vd-stats{display:flex; gap:10px; margin-top:16px;}
+  .vd-stat{flex:1; background:rgba(255,255,255,0.08); border-radius:14px; padding:10px 12px;}
+  .vd-stat .num{font-size:18px; font-weight:800;}
+  .vd-stat .lbl{font-size:10.5px; color:#A0A0B4; margin-top:2px;}
+
+  .job-card{
+    background:var(--card); border:1.5px solid var(--line); border-radius:18px; padding:16px; margin:0 20px 14px;
+    animation:fadeIn .3s ease;
+  }
+  .job-card-top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;}
+  .job-card .svc{display:flex; align-items:center; gap:8px; font-weight:700; font-size:14.5px;}
+  .job-card .svc .icon{font-size:20px;}
+  .job-card .time-ago{font-size:11px; color:var(--gray-light); background:#F5F4F1; padding:3px 8px; border-radius:8px;}
+  .job-card .driver-row{display:flex; align-items:center; gap:10px; margin:10px 0;}
+  .job-card .driver-row .name{font-weight:700; font-size:13.5px;}
+  .job-card .driver-row .loc{font-size:11.5px; color:var(--gray);}
+  .job-card .job-meta{display:flex; gap:14px; font-size:12px; color:var(--gray); margin-bottom:12px;}
+  .job-card .job-meta b{color:var(--dark);}
+  .job-actions{display:flex; gap:10px;}
+
+  .active-job-banner{
+    margin:18px 20px 0; background:linear-gradient(135deg,var(--dark),var(--dark-2)); color:#fff; border-radius:18px; padding:16px 18px;
+  }
+  .active-job-banner .stage{font-size:11px; color:#FF9F6B; font-weight:700; text-transform:uppercase; letter-spacing:.5px;}
+  .active-job-banner h4{margin:6px 0 4px; font-size:16px;}
+  .active-job-banner .sub{font-size:12.5px; color:#B7B7C6;}
+  .aj-actions{display:flex; gap:10px; margin-top:14px;}
+
+  .toast{
+    position:absolute; left:50%; bottom:26px; transform:translateX(-50%);
+    background:var(--dark); color:#fff; padding:11px 18px; border-radius:12px; font-size:13px; font-weight:600;
+    box-shadow:var(--shadow); z-index:100; opacity:0; pointer-events:none; transition:opacity .25s, bottom .25s;
+    white-space:nowrap; max-width:90%;
+  }
+  .toast.show{opacity:1; bottom:36px;}
+
+  .banner-demo{
+    text-align:center; padding:10px; font-size:11px; color:var(--gray-light); flex-shrink:0; border-top:1px solid var(--line);
+  }
+  .banner-demo a{color:var(--orange); font-weight:700; text-decoration:none; cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="statusbar">
+    <span id="clock">9:41</span>
+    <div class="dot-cluster">
+      <span>●●●</span><span>📶</span><span>🔋</span>
+    </div>
+  </div>
+
+  <div class="app-body" id="appBody">
+
+    <!-- ================= LANDING ================= -->
+    <div class="screen active" id="screen-landing">
+      <div class="role-switch">
+        <div class="role-pill active" id="pillDriver" onclick="setLandingRole('driver')">Driver</div>
+        <div class="role-pill" id="pillVendor" onclick="setLandingRole('vendor')">Service Provider</div>
+      </div>
+      <div class="landing-hero">
+        <div class="logo-mark">🛠️</div>
+        <h1 class="brand-name">Fixify</h1>
+        <p class="brand-tag" id="landingTag">Roadside help, minutes away. Get matched with a trusted mechanic, tow truck, or tire tech near you — wherever you are.</p>
+      </div>
+      <div class="landing-actions" id="landingActions">
+        <button class="btn btn-primary" onclick="startDriverFlow()">🚗 My car broke down</button>
+        <button class="btn btn-ghost" onclick="sampleToast('Sign-in is mocked for this demo')">Already requested help? Track it</button>
+      </div>
+      <div class="admin-link-row"><span onclick="openAdminView()">Admin</span></div>
+    </div>
+
+    <!-- ================= SERVICE SELECT ================= -->
+    <div class="screen" id="screen-service">
+      <div class="topbar"><div class="backbtn" onclick="go('screen-landing')">←</div><h2>What's going on?</h2></div>
+      <div class="scroll">
+        <div class="section-intro"><p>Select the issue so we match you with the right vendor.</p></div>
+        <div class="name-field">
+          <label for="driverNameInput">Your name</label>
+          <input type="text" id="driverNameInput" placeholder="Guest Driver">
+        </div>
+        <div class="service-grid" id="serviceGrid"></div>
+      </div>
+      <div class="sticky-footer">
+        <button class="btn btn-primary" id="serviceContinueBtn" disabled onclick="go('screen-locate'); startLocating();">Continue</button>
+      </div>
+    </div>
+
+    <!-- ================= LOCATING ================= -->
+    <div class="screen" id="screen-locate">
+      <div class="topbar"><div class="backbtn" onclick="go('screen-service')">←</div><h2>Your location</h2></div>
+      <div class="locating-wrap">
+        <div class="pulse-ring"><div class="dot"></div></div>
+        <h3 id="locTitle">Finding your location…</h3>
+        <p id="locSub">Hang tight, this takes a second.</p>
+        <div class="loc-result" id="locResult">
+          <div class="row"><span class="pin">📍</span><strong id="locName">Westlands, Nairobi</strong></div>
+          <div class="coords" id="locCoords">Lat/Lng: -1.2634, 36.8047</div>
+          <div class="mock-loc-link" onclick="useMockLocation()">Not in Nairobi right now? Use demo location instead</div>
+        </div>
+      </div>
+      <div class="sticky-footer" id="locFooter" style="display:none;">
+        <button class="btn btn-primary" onclick="go('screen-map'); startMatching();">Confirm location &amp; find help</button>
+      </div>
+    </div>
+
+    <!-- ================= MAP / VENDOR MATCH ================= -->
+    <div class="screen" id="screen-map">
+      <div class="topbar"><div class="backbtn" onclick="go('screen-locate')">←</div><h2>Nearby help</h2></div>
+      <div class="scroll">
+        <div class="map-wrap" id="mapWrap"></div>
+        <div class="list-heading">
+          <h4 id="matchingLabel">Matching you with vendors…</h4>
+          <div class="right"><span class="live-badge"><span class="dot"></span>LIVE DB</span><span class="count" id="vendorCount"></span></div>
+        </div>
+        <div class="vendor-list" id="vendorList"></div>
+      </div>
+      <div class="sticky-footer">
+        <button class="btn btn-primary" id="requestBtn" disabled onclick="requestVendor()">Select a vendor to continue</button>
+      </div>
+    </div>
+
+    <!-- ================= CONFIRMED / EN ROUTE ================= -->
+    <div class="screen" id="screen-confirm">
+      <div class="scroll" style="position:relative;">
+        <div class="map-wrap confirm-map" id="confirmMap"></div>
+        <div class="confirm-sheet">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div class="status-chip"><span class="blip"></span> <span id="confirmStatusText">Vendor is on the way</span></div>
+            <div class="notif-bell" onclick="openNotificationsPanel('driver', state.driverId)">🔔<span class="notif-badge" id="driverNotifBadge">0</span></div>
+          </div>
+          <div class="eta-big">Arriving in <b id="etaCountdown">—</b></div>
+          <div style="font-size:12.5px; color:var(--gray);" id="confirmServiceLine">Flat tire assistance • Westlands, Nairobi</div>
+
+          <div class="vendor-hero">
+            <div class="avatar" id="confirmAvatar">🔧</div>
+            <div style="flex:1;">
+              <div class="name" id="confirmName">James Mwangi</div>
+              <div class="sub"><span class="rating" id="confirmRating">★ 4.9</span> · <span id="confirmVehicle">Tow Truck</span></div>
+              <div class="plate" id="confirmPlate">KDD 214J</div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-dark" onclick="initiateCall('driver', state.jobId, state.matchedVendor ? state.matchedVendor.name : 'Vendor', state.matchedVendor ? state.matchedVendor.icon : '🔧')">📞 Call</button>
+            <button class="btn btn-secondary" onclick="openChat()">💬 Message</button>
+          </div>
+          <div class="cancel-link" onclick="cancelRequest()">Cancel request</div>
+          <div class="sim-link" id="simLink" onclick="simulateVendorFlow()">No second tab handy? Simulate vendor actions</div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="chatModal">
+        <div class="modal-sheet">
+          <h4 id="chatTitle">Message vendor</h4>
+          <div class="chat-log" id="chatLog"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendChat()">
+            <button onclick="sendChat()">Send</button>
+          </div>
+          <div class="cancel-link" style="margin-top:10px;" onclick="closeChat()">Close</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PAYMENT (M-Pesa) ================= -->
+    <div class="screen" id="screen-pay">
+      <div class="done-wrap">
+        <div class="done-check">💳</div>
+        <h2 style="margin:0 0 6px;">Pay to confirm your request</h2>
+        <p style="color:var(--gray); margin:0 0 16px; font-size:14px;">Your vendor is only notified once payment clears — this protects them from being dispatched on a request that never gets paid. Amount due: <b id="payAmount">KES 0</b></p>
+        <div class="name-field" style="width:100%; max-width:280px; margin:10px 0 4px;">
+          <label for="payPhoneInput">M-Pesa phone number</label>
+          <input type="tel" id="payPhoneInput" placeholder="+254 7xx xxx xxx">
+        </div>
+        <div id="payStatusArea" style="width:100%; max-width:280px;"></div>
+      </div>
+      <div class="sticky-footer">
+        <button class="btn btn-primary" id="payBtn" onclick="initiatePayment()">Pay with M-Pesa</button>
+        <button class="btn btn-primary" id="payContinueBtn" style="display:none; margin-top:10px;" onclick="continueAfterPayment()">Continue</button>
+        <div class="cancel-link" onclick="cancelRequest()">Cancel request</div>
+      </div>
+    </div>
+
+    <!-- ================= ARRIVED / RATE ================= -->
+    <div class="screen" id="screen-done">
+      <div class="done-wrap">
+        <div class="done-check">✅</div>
+        <h2 style="margin:0 0 6px;">Job complete!</h2>
+        <p style="color:var(--gray); margin:0; font-size:14px;" id="doneSub">How did it go?</p>
+        <div class="stars" id="starRow">
+          <span class="star" data-v="1">★</span>
+          <span class="star" data-v="2">★</span>
+          <span class="star" data-v="3">★</span>
+          <span class="star" data-v="4">★</span>
+          <span class="star" data-v="5">★</span>
+        </div>
+      </div>
+      <div class="sticky-footer">
+        <button class="btn btn-primary" onclick="finishDriverFlow()">Done</button>
+      </div>
+    </div>
+
+    <!-- ================= VENDOR DASHBOARD ================= -->
+    <div class="screen" id="screen-vendor">
+      <div class="scroll">
+        <div class="vd-header">
+          <div class="vd-header-top">
+            <div>
+              <h3 id="vendorGreeting">Hi 👋</h3>
+              <div class="sub" id="vendorStatusText">Loading…</div>
+            </div>
+            <div class="online-toggle">
+              <div class="notif-bell on-dark" onclick="openNotificationsPanel('vendor', CURRENT_VENDOR_ID)">🔔<span class="notif-badge" id="vendorNotifBadge">0</span></div>
+              <div class="switch on" id="onlineSwitch" onclick="toggleOnline()"><div class="knob"></div></div>
+            </div>
+          </div>
+          <div class="vd-stats">
+            <div class="vd-stat"><div class="num" id="vdEarnings">KES 0</div><div class="lbl">Today's earnings</div></div>
+            <div class="vd-stat"><div class="num" id="vdCompleted">0</div><div class="lbl">Jobs completed</div></div>
+            <div class="vd-stat"><div class="num" id="vdRating">— ★</div><div class="lbl">Rating</div></div>
+          </div>
+        </div>
+
+        <div id="activeJobSlot"></div>
+
+        <div class="list-heading" style="margin-top:16px;">
+          <h4>Incoming requests</h4>
+          <div class="right"><span class="live-badge"><span class="dot"></span>LIVE DB</span><span class="count" id="jobCount"></span></div>
+        </div>
+        <div id="jobList"></div>
+      </div>
+      <div class="banner-demo">Real backend demo — open a driver request in another tab to see it appear here. <a onclick="leaveVendorDashboard()">Back to role switcher</a></div>
+    </div>
+
+    <!-- ================= VENDOR SELF-REGISTRATION ================= -->
+    <div class="screen" id="screen-vendor-signup">
+      <div class="topbar"><div class="backbtn" onclick="go('screen-landing')">←</div><h2>Vendor application</h2></div>
+      <div class="scroll">
+        <div class="section-intro"><p>Tell us about your roadside service. An admin reviews every application before you go live.</p></div>
+        <div class="name-field">
+          <label for="vsName">Your name</label>
+          <input type="text" id="vsName" placeholder="e.g. John Kamau">
+        </div>
+        <div class="name-field">
+          <label for="vsPhone">Phone number</label>
+          <input type="tel" id="vsPhone" placeholder="+254 7xx xxx xxx">
+        </div>
+        <div class="name-field">
+          <label>Services you offer</label>
+          <div class="chip-grid" id="vsServiceChips"></div>
+        </div>
+        <div class="name-field">
+          <label for="vsNeighborhood">Coverage area</label>
+          <select id="vsNeighborhood"></select>
+        </div>
+        <div class="name-field">
+          <label for="vsIdNumber">National ID or vehicle plate number (for verification)</label>
+          <input type="text" id="vsIdNumber" placeholder="e.g. 12345678 or KDD 214J">
+        </div>
+      </div>
+      <div class="sticky-footer">
+        <button class="btn btn-primary" onclick="submitVendorSignup()">Submit application</button>
+      </div>
+    </div>
+
+    <!-- ================= VENDOR PENDING CONFIRMATION ================= -->
+    <div class="screen" id="screen-vendor-pending">
+      <div class="done-wrap">
+        <div class="done-check">📋</div>
+        <h2 style="margin:0 0 6px;">Application received!</h2>
+        <p style="color:var(--gray); margin:0; font-size:14px;">We're reviewing your details. You'll be able to receive jobs once an admin approves your application.</p>
+      </div>
+      <div class="sticky-footer">
+        <button class="btn btn-primary" onclick="go('screen-landing')">Back to home</button>
+      </div>
+    </div>
+
+    <!-- ================= ADMIN: VENDOR APPLICATIONS ================= -->
+    <div class="screen" id="screen-admin">
+      <div class="topbar"><div class="backbtn" onclick="go('screen-landing')">←</div><h2>Admin — Vendor applications</h2></div>
+      <div class="scroll">
+        <div class="list-heading"><h4>Pending review</h4><span class="count" id="adminPendingCount"></span></div>
+        <div id="adminPendingList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="notifModal">
+    <div class="modal-sheet">
+      <h4>Notifications</h4>
+      <div class="chat-log" id="notifList" style="max-height:280px;"></div>
+      <div class="cancel-link" style="margin-top:10px;" onclick="closeNotifModal()">Close</div>
+    </div>
+  </div>
+
+  <!-- Simulated voice call — no real telephony, mirrors how payments/SMS are mocked elsewhere in this demo.
+       Backed by a real `calls` row polled from both sides, so a call placed on one screen shows up as
+       incoming on the other. -->
+  <div class="modal-overlay" id="callModal">
+    <div class="modal-sheet call-sheet">
+      <div class="call-avatar ringing" id="callAvatar">📞</div>
+      <div class="call-name" id="callName">—</div>
+      <div class="call-status" id="callStatus">Calling…</div>
+      <div class="call-status" id="callTimer" style="margin-bottom:22px;"></div>
+      <div id="callActionsOutgoing">
+        <button class="call-end-btn" onclick="endCallByUser()">📵</button>
+      </div>
+      <div class="call-actions-row" id="callActionsIncoming" style="display:none;">
+        <button class="call-end-btn" onclick="declineCallByUser()">📵</button>
+        <button class="call-accept-btn" onclick="acceptCallByUser()">📞</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* =========================================================
+   FIXIFY — frontend for the real Express + SQLite backend.
+   All vendor/job data now comes from the API; nothing about
+   matching, distances, or job status is faked in the browser.
+   ========================================================= */
+
+// Real vendor auth isn't built yet (see README), but the app can no longer
+// hardcode a single vendor — a pilot needs each real vendor to see their
+// own dashboard. Identity is resolved by phone number (what they signed up
+// with) and persisted in localStorage so they don't have to re-enter it
+// every visit. A `?vendor=<id>` URL param (e.g. a link an admin hands a
+// vendor directly) is also honored and takes precedence on first load.
+const VENDOR_ID_STORAGE_KEY = 'fixify_vendor_id';
+
+function getStoredVendorId(){
+  const fromUrl = new URLSearchParams(location.search).get('vendor');
+  if(fromUrl){
+    localStorage.setItem(VENDOR_ID_STORAGE_KEY, fromUrl);
+    // Clean the URL so refreshing/sharing it doesn't keep passing the param around.
+    history.replaceState(null, '', location.pathname);
+    return fromUrl;
+  }
+  return localStorage.getItem(VENDOR_ID_STORAGE_KEY);
+}
+
+function setStoredVendorId(id){
+  localStorage.setItem(VENDOR_ID_STORAGE_KEY, id);
+  CURRENT_VENDOR_ID = id;
+}
+
+function clearStoredVendorId(){
+  localStorage.removeItem(VENDOR_ID_STORAGE_KEY);
+  CURRENT_VENDOR_ID = null;
+}
+
+let CURRENT_VENDOR_ID = getStoredVendorId();
+
+const SERVICES = [
+  {id:'tire', label:'Flat Tire', icon:'🛞', sub:'Puncture / blowout'},
+  {id:'towing', label:'Towing', icon:'🚛', sub:'Vehicle won\'t move'},
+  {id:'engine', label:'Engine Issue', icon:'🔧', sub:'Mechanical problem'},
+  {id:'battery', label:'Battery Jump', icon:'🔋', sub:'Won\'t start'},
+  {id:'fuel', label:'Fuel Delivery', icon:'⛽', sub:'Ran out of fuel'},
+  {id:'accident', label:'Accident', icon:'🚨', sub:'Needs towing'},
+  {id:'other', label:'Other', icon:'❓', sub:'Something else'},
+];
+
+// Used only to label the driver's detected location with a neighborhood
+// name for display — the real lat/lng is what's sent to the backend for
+// haversine matching.
+// Mirrors src/neighborhoods.js — covers Nairobi County plus the wider
+// Nairobi Metropolitan Area (satellite towns in Kiambu, Kajiado, and
+// Machakos counties) so a driver's detected location is labeled sensibly
+// anywhere in the metro, not just the ~10 central-Nairobi neighborhoods
+// this list used to cover. `region` records the county so the label
+// doesn't falsely say "Nairobi" for e.g. Thika (Kiambu) or Machakos.
+const NEIGHBORHOOD_POINTS = [
+  // Nairobi County
+  {name:'Westlands', lat:-1.2673, lng:36.8065, region:'Nairobi'},
+  {name:'Kilimani', lat:-1.2921, lng:36.7820, region:'Nairobi'},
+  {name:'CBD', lat:-1.2864, lng:36.8172, region:'Nairobi'},
+  {name:'Karen', lat:-1.3194, lng:36.7085, region:'Nairobi'},
+  {name:'Lavington', lat:-1.2793, lng:36.7690, region:'Nairobi'},
+  {name:'Parklands', lat:-1.2611, lng:36.8172, region:'Nairobi'},
+  {name:'South B', lat:-1.3167, lng:36.8283, region:'Nairobi'},
+  {name:'South C', lat:-1.3100, lng:36.8270, region:'Nairobi'},
+  {name:'Upperhill', lat:-1.2963, lng:36.8172, region:'Nairobi'},
+  {name:'Kileleshwa', lat:-1.2833, lng:36.7757, region:'Nairobi'},
+  {name:'Kitisuru', lat:-1.2200, lng:36.7900, region:'Nairobi'},
+  {name:'Runda', lat:-1.2100, lng:36.8100, region:'Nairobi'},
+  {name:'Gigiri', lat:-1.2330, lng:36.8110, region:'Nairobi'},
+  {name:'Kabete', lat:-1.2500, lng:36.7350, region:'Nairobi'},
+  {name:'Ngong Road', lat:-1.3000, lng:36.7833, region:'Nairobi'},
+  {name:'Dagoretti', lat:-1.3000, lng:36.7500, region:'Nairobi'},
+  {name:'Langata', lat:-1.3667, lng:36.7500, region:'Nairobi'},
+  {name:'Eastleigh', lat:-1.2790, lng:36.8500, region:'Nairobi'},
+  {name:'Buruburu', lat:-1.2850, lng:36.8770, region:'Nairobi'},
+  {name:'Donholm', lat:-1.2930, lng:36.8850, region:'Nairobi'},
+  {name:'Umoja', lat:-1.2820, lng:36.8890, region:'Nairobi'},
+  {name:'Kayole', lat:-1.2780, lng:36.9000, region:'Nairobi'},
+  {name:'Pipeline', lat:-1.3080, lng:36.8850, region:'Nairobi'},
+  {name:'Imara Daima', lat:-1.3350, lng:36.8700, region:'Nairobi'},
+  {name:'Embakasi', lat:-1.3250, lng:36.8950, region:'Nairobi'},
+  {name:'Ruai', lat:-1.2830, lng:36.9500, region:'Nairobi'},
+  {name:'Kasarani', lat:-1.2270, lng:36.8890, region:'Nairobi'},
+  {name:'Roysambu', lat:-1.2190, lng:36.8890, region:'Nairobi'},
+  {name:'Kahawa', lat:-1.1900, lng:36.9250, region:'Nairobi'},
+  {name:'Ruaka', lat:-1.2000, lng:36.7800, region:'Nairobi'},
+  // Kiambu County
+  {name:'Thika', lat:-1.0333, lng:37.0693, region:'Kiambu'},
+  {name:'Ruiru', lat:-1.1500, lng:36.9583, region:'Kiambu'},
+  {name:'Juja', lat:-1.1036, lng:37.0142, region:'Kiambu'},
+  {name:'Kiambu Town', lat:-1.1714, lng:36.8356, region:'Kiambu'},
+  {name:'Limuru', lat:-1.1133, lng:36.6437, region:'Kiambu'},
+  {name:'Kikuyu', lat:-1.2470, lng:36.6650, region:'Kiambu'},
+  // Kajiado County
+  {name:'Ngong', lat:-1.3667, lng:36.6500, region:'Kajiado'},
+  {name:'Rongai', lat:-1.3959, lng:36.7539, region:'Kajiado'},
+  {name:'Kitengela', lat:-1.4740, lng:36.9570, region:'Kajiado'},
+  {name:'Kiserian', lat:-1.4297, lng:36.6942, region:'Kajiado'},
+  // Machakos County
+  {name:'Machakos', lat:-1.5177, lng:37.2634, region:'Machakos'},
+  {name:'Athi River', lat:-1.4557, lng:36.9770, region:'Machakos'},
+];
+
+function toRad(d){ return d*Math.PI/180; }
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371, dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function nearestNeighborhood(lat,lng){
+  let best=NEIGHBORHOOD_POINTS[0], bestDist=Infinity;
+  for(const p of NEIGHBORHOOD_POINTS){
+    const d=haversineKm(lat,lng,p.lat,p.lng);
+    if(d<bestDist){bestDist=d; best=p;}
+  }
+  return best;
+}
+function serviceMeta(id){ return SERVICES.find(s=>s.id===id) || {icon:'❓', label:id}; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function timeAgo(ts){
+  if(!ts) return 'just now';
+  const iso = typeof ts === 'string' ? ts.replace(' ','T')+'Z' : ts;
+  const sec = Math.max(0, Math.round((Date.now() - new Date(iso).getTime())/1000));
+  if(sec<60) return 'just now';
+  return `${Math.round(sec/60)}m ago`;
+}
+
+async function api(path, opts={}){
+  const res = await fetch(path, {
+    headers:{'Content-Type':'application/json'},
+    ...opts,
+  });
+  const data = await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
+}
+
+let state = {
+  serviceId: null,
+  location: {name:'Westlands, Nairobi', lat:-1.2673, lng:36.8065},
+  vendors: [],
+  selectedVendorIdx: null,
+  jobId: null,
+  matchedVendor: null,
+  etaSeconds: null,
+  etaTimer: null,
+  etaStarted: false,
+  confirmPollTimer: null,
+  vendorPollTimer: null,
+  vendorHasActiveJob: false,
+  vsSelectedServices: new Set(),
+  driverId: null,
+  confirmNotifTimer: null,
+  seenNotificationIds: new Set(),
+  paymentJobId: null,
+  paymentAmount: 0,
+  paymentId: null,
+  paymentPollTimer: null,
+  activeCall: null, // { id, jobId, myRole } while the call modal is open
+  callWatchTimer: null,
+  seenCallIds: new Set(), // calls already surfaced/handled, so we don't re-pop them
+};
+
+function $(sel){return document.querySelector(sel);}
+function $all(sel){return document.querySelectorAll(sel);}
+
+function go(id){
+  $all('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(msg, ms=2600){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), ms);
+}
+function sampleToast(msg){ toast(msg); }
+
+function tickClock(){
+  const d = new Date();
+  let h = d.getHours()%12; if(h===0) h=12;
+  const m = d.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}`;
+}
+tickClock(); setInterval(tickClock, 30000);
+
+/* ---------------- Landing role switch ---------------- */
+function setLandingRole(role){
+  document.getElementById('pillDriver').classList.toggle('active', role==='driver');
+  document.getElementById('pillVendor').classList.toggle('active', role==='vendor');
+  const tag = document.getElementById('landingTag');
+  const actions = document.getElementById('landingActions');
+  if(role==='driver'){
+    tag.textContent = "Roadside help, minutes away. Get matched with a trusted mechanic, tow truck, or tire tech near you — wherever you are.";
+    actions.innerHTML = `
+      <button class="btn btn-primary" onclick="startDriverFlow()">🚗 My car broke down</button>
+      <button class="btn btn-ghost" onclick="sampleToast('Sign-in is mocked for this demo')">Already requested help? Track it</button>`;
+  } else {
+    tag.textContent = "Turn your truck, van, or toolkit into income. Get matched to nearby drivers who need help right now.";
+    if(CURRENT_VENDOR_ID){
+      actions.innerHTML = `
+        <button class="btn btn-primary" onclick="openVendorDashboard()">🔧 Open my dashboard</button>
+        <button class="btn btn-ghost" onclick="switchVendor()">Not you? Switch vendor</button>
+        <button class="btn btn-secondary" onclick="openVendorSignup()">📝 Apply to become a vendor</button>`;
+    } else {
+      actions.innerHTML = `
+        <div class="name-field">
+          <label for="vendorLoginPhone">Your registered phone number</label>
+          <input type="tel" id="vendorLoginPhone" placeholder="+254 7xx xxx xxx" onkeydown="if(event.key==='Enter')vendorLoginByPhone()">
+        </div>
+        <button class="btn btn-primary" onclick="vendorLoginByPhone()">🔧 Open my dashboard</button>
+        <button class="btn btn-secondary" onclick="openVendorSignup()">📝 Apply to become a vendor</button>`;
+    }
+  }
+}
+
+async function vendorLoginByPhone(){
+  const input = document.getElementById('vendorLoginPhone');
+  const phone = (input.value || '').trim();
+  if(!phone){ toast('Enter the phone number you registered with'); return; }
+  try {
+    const { vendors } = await api(`/api/vendors?phone=${encodeURIComponent(phone)}`);
+    if(!vendors.length){
+      toast("No vendor found with that number — apply below if you haven't yet.");
+      return;
+    }
+    setStoredVendorId(vendors[0].id);
+    await openVendorDashboard();
+  } catch(err){
+    toast('Could not look you up — try again.');
+  }
+}
+
+function switchVendor(){
+  clearStoredVendorId();
+  setLandingRole('vendor');
+}
+
+/* ==================== DRIVER FLOW ==================== */
+
+function startDriverFlow(){
+  state.serviceId = null;
+  buildServiceGrid();
+  go('screen-service');
+}
+
+function buildServiceGrid(){
+  const grid = document.getElementById('serviceGrid');
+  grid.innerHTML = SERVICES.map(s=>`
+    <div class="service-card" data-id="${s.id}" onclick="selectService('${s.id}')">
+      <div class="icon">${s.icon}</div>
+      <div>
+        <div class="label">${s.label}</div>
+        <div class="sub">${s.sub}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectService(id){
+  state.serviceId = id;
+  $all('.service-card').forEach(c=>c.classList.toggle('selected', c.dataset.id===id));
+  document.getElementById('serviceContinueBtn').disabled = false;
+}
+
+function startLocating(){
+  document.getElementById('locResult').classList.remove('show');
+  document.getElementById('locFooter').style.display = 'none';
+  document.getElementById('locTitle').textContent = 'Finding your location…';
+  document.getElementById('locSub').textContent = 'Hang tight, this takes a second.';
+
+  if(navigator.geolocation){
+    let done = false;
+    const timer = setTimeout(()=>{ if(!done){ done=true; useMockLocation('Using approximate location (timed out).'); } }, 4000);
+    navigator.geolocation.getCurrentPosition(
+      pos=>{ if(!done){ done=true; clearTimeout(timer); applyLocation(true, pos.coords.latitude, pos.coords.longitude, 'Using your device GPS.'); } },
+      err=>{ if(!done){ done=true; clearTimeout(timer); useMockLocation('Using approximate location (permission denied).'); } },
+      {timeout:4000}
+    );
+  } else {
+    setTimeout(()=>useMockLocation('Using approximate location (GPS unavailable).'), 1000);
+  }
+}
+
+function applyLocation(usedReal, lat, lng, subText){
+  // Uses the driver's actual GPS coordinates for matching regardless — this
+  // label is display-only. `region` (Nairobi/Kiambu/Kajiado/Machakos) keeps
+  // it honest for the metro's outer towns instead of always saying
+  // "Nairobi" (a match near Thika is Kiambu, not Nairobi).
+  const nearest = nearestNeighborhood(lat, lng);
+  state.location = { name: `${nearest.name}, ${nearest.region}`, lat, lng };
+  document.getElementById('locTitle').textContent = 'Location found';
+  document.getElementById('locSub').textContent = subText;
+  document.getElementById('locName').textContent = state.location.name;
+  document.getElementById('locCoords').textContent =
+    `Lat/Lng: ${lat.toFixed(4)}, ${lng.toFixed(4)}${usedReal ? ' (device GPS)' : ' (approximate)'}`;
+  document.getElementById('locResult').classList.add('show');
+  document.getElementById('locFooter').style.display = 'block';
+}
+
+function useMockLocation(subText){
+  const lat = -1.2673 + (Math.random()-0.5)*0.02;
+  const lng = 36.8065 + (Math.random()-0.5)*0.02;
+  applyLocation(false, lat, lng, subText || 'Using Nairobi demo location.');
+}
+
+function normalizeVendor(v){
+  return {
+    id: v.id,
+    name: v.name,
+    biz: v.business_name,
+    vehicle: v.vehicle_type,
+    hood: v.neighborhood,
+    rating: v.rating,
+    plate: v.plate,
+    icon: v.icon,
+    dist: v.distance_km,
+    eta: v.eta_minutes,
+    price: v.price_estimate,
+  };
+}
+
+function hoodCoords(seedIdx){
+  const positions = [
+    {x:22,y:28},{x:78,y:22},{x:70,y:70},{x:18,y:68},{x:50,y:14},{x:85,y:50},{x:12,y:46},
+  ];
+  return positions[seedIdx % positions.length];
+}
+
+function renderMap(wrapId, vendors, loading){
+  const wrap = document.getElementById(wrapId);
+  wrap.innerHTML = `
+    <svg width="100%" height="100%" style="position:absolute;inset:0;" preserveAspectRatio="none">
+      <line x1="0" y1="35%" x2="100%" y2="30%" stroke="#E1E0E7" stroke-width="6"/>
+      <line x1="0" y1="70%" x2="100%" y2="75%" stroke="#E1E0E7" stroke-width="6"/>
+      <line x1="20%" y1="0" x2="15%" y2="100%" stroke="#E1E0E7" stroke-width="5"/>
+      <line x1="60%" y1="0" x2="65%" y2="100%" stroke="#E1E0E7" stroke-width="5"/>
+      <line x1="85%" y1="0" x2="88%" y2="100%" stroke="#E1E0E7" stroke-width="4"/>
+    </svg>
+    <div class="map-blob" style="width:120px;height:90px; left:-20px; top:-10px; background:#E5F3E8;"></div>
+    <div class="map-blob" style="width:100px;height:80px; right:-20px; bottom:10px; background:#E9EEFB;"></div>
+    <div class="hood-label" style="left:10px; top:8px;">${state.location.name.split(',')[0]}</div>
+  `;
+
+  const me = document.createElement('div');
+  me.className = 'me-pulse';
+  me.style.left = '50%'; me.style.top = '55%';
+  wrap.appendChild(me);
+  const mePin = document.createElement('div');
+  mePin.className = 'map-pin me';
+  mePin.style.left = '50%'; mePin.style.top = '55%';
+  mePin.innerHTML = `<div class="bubble"><span>📍</span></div>`;
+  wrap.appendChild(mePin);
+
+  if(loading) return;
+
+  vendors.forEach((v, i)=>{
+    const pos = hoodCoords(i);
+    const pin = document.createElement('div');
+    pin.className = 'map-pin' + (state.selectedVendorIdx===i?' selected':'');
+    pin.style.left = pos.x+'%'; pin.style.top = pos.y+'%';
+    pin.onclick = ()=>selectVendor(i);
+    pin.innerHTML = `<div class="bubble"><span>${v.icon}</span></div><div class="eta-chip">${v.eta} min</div>`;
+    wrap.appendChild(pin);
+  });
+}
+
+function drawRouteLine(wrapId){
+  const wrap = document.getElementById(wrapId);
+  const pos = hoodCoords(0);
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width','100%'); svg.setAttribute('height','100%');
+  svg.classList.add('route-line');
+  svg.style.position='absolute'; svg.style.inset='0';
+  svg.innerHTML = `<line x1="${pos.x}%" y1="${pos.y}%" x2="50%" y2="55%" stroke="#FF5A1F" stroke-width="3" stroke-dasharray="6,6"/>`;
+  wrap.appendChild(svg);
+}
+
+function renderVendorList(){
+  const list = document.getElementById('vendorList');
+  list.innerHTML = state.vendors.map((v,i)=>`
+    <div class="vendor-card ${state.selectedVendorIdx===i?'selected':''}" onclick="selectVendor(${i})">
+      <div class="avatar">${v.icon}</div>
+      <div class="vendor-info">
+        <div class="name">${v.name} <span class="badge">${v.vehicle}</span></div>
+        <div class="meta">
+          <span class="rating">★ ${v.rating}</span>
+          <span>${v.biz}</span>
+        </div>
+        <div class="meta"><span>📍 ${v.hood}</span></div>
+      </div>
+      <div class="vendor-side">
+        <div class="eta">${v.eta} min</div>
+        <div class="dist">${v.dist} km · KES ${v.price}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectVendor(i){
+  state.selectedVendorIdx = i;
+  renderVendorList();
+  renderMap('mapWrap', state.vendors, false);
+  const v = state.vendors[i];
+  const btn = document.getElementById('requestBtn');
+  btn.disabled = false;
+  btn.textContent = `Request ${v.name.split(' ')[0]} — ${v.eta} min away`;
+}
+
+async function startMatching(){
+  document.getElementById('matchingLabel').textContent = 'Creating your request…';
+  document.getElementById('vendorCount').textContent = '';
+  document.getElementById('vendorList').innerHTML = '';
+  document.getElementById('requestBtn').disabled = true;
+  document.getElementById('requestBtn').textContent = 'Select a vendor to continue';
+  renderMap('mapWrap', [], true);
+
+  try {
+    const nameInput = document.getElementById('driverNameInput');
+    const driverName = (nameInput && nameInput.value.trim()) || 'Guest Driver';
+
+    const createRes = await api('/api/jobs', {
+      method:'POST',
+      body: JSON.stringify({
+        driverName,
+        serviceType: state.serviceId,
+        lat: state.location.lat,
+        lng: state.location.lng,
+        locationLabel: state.location.name,
+      }),
+    });
+    state.jobId = createRes.job.id;
+    state.driverId = createRes.driver.id;
+    await refreshNearbyVendors();
+  } catch(err){
+    toast(err.message || 'Could not create request');
+    document.getElementById('matchingLabel').textContent = 'Something went wrong';
+  }
+}
+
+async function refreshNearbyVendors(){
+  document.getElementById('matchingLabel').textContent = 'Matching you with vendors…';
+  try {
+    const nearbyRes = await api(`/api/jobs/${state.jobId}/nearby-vendors`);
+    state.vendors = nearbyRes.vendors.map(normalizeVendor);
+    state.selectedVendorIdx = null;
+    document.getElementById('requestBtn').disabled = true;
+    document.getElementById('requestBtn').textContent = 'Select a vendor to continue';
+
+    document.getElementById('matchingLabel').textContent = state.vendors.length ? 'Vendors near you' : 'No vendors available';
+    document.getElementById('vendorCount').textContent = state.vendors.length ? `${state.vendors.length} found` : '';
+    renderMap('mapWrap', state.vendors, false);
+    renderVendorList();
+    if(!state.vendors.length){
+      document.getElementById('vendorList').innerHTML =
+        `<div class="empty-state"><div class="icon">🛰️</div>No available vendors nearby for this service right now.<br>Try again shortly.</div>`;
+    }
+  } catch(err){
+    toast(err.message || 'Could not load nearby vendors');
+  }
+}
+
+async function requestVendor(){
+  if(state.selectedVendorIdx===null) return;
+  const v = state.vendors[state.selectedVendorIdx];
+  const btn = document.getElementById('requestBtn');
+  btn.disabled = true;
+  toast('Sending request…');
+  try {
+    const res = await api(`/api/jobs/${state.jobId}/select-vendor`, {
+      method:'POST',
+      body: JSON.stringify({ vendorId: v.id }),
+    });
+    state.matchedVendor = normalizeVendor(res.vendor);
+    state.matchedVendor.eta = res.job.eta_minutes;
+    state.matchedVendor.price = res.job.price_estimate;
+    state.matchedVendor.dist = res.job.distance_km;
+
+    if(res.job.status === 'awaiting_payment'){
+      // Payment now happens BEFORE the vendor is dispatched, not after the
+      // job is done — protects the vendor from doing unpaid work. The
+      // vendor only finds out about this request once payment clears.
+      setupPaymentScreen(res.job);
+      go('screen-pay');
+    } else {
+      // status is already 'matched' — this job was already paid for
+      // (the driver is re-picking a vendor after an earlier decline), so
+      // the new vendor is notified immediately, no second payment.
+      go('screen-confirm');
+      setupConfirmScreen();
+    }
+  } catch(err){
+    toast(err.message || 'Could not reach that vendor — try another');
+    btn.disabled = false;
+  }
+}
+
+function setupConfirmScreen(){
+  const v = state.matchedVendor;
+  const svc = SERVICES.find(s=>s.id===state.serviceId);
+  document.getElementById('confirmAvatar').textContent = v.icon;
+  document.getElementById('confirmName').textContent = v.name;
+  document.getElementById('confirmRating').textContent = `★ ${v.rating}`;
+  document.getElementById('confirmVehicle').textContent = v.vehicle;
+  document.getElementById('confirmPlate').textContent = v.plate;
+  document.getElementById('confirmServiceLine').textContent = `${svc.label} assistance • ${state.location.name}`;
+  document.getElementById('chatTitle').textContent = `Message ${v.name}`;
+  document.getElementById('confirmStatusText').textContent = `Request sent — waiting for ${v.name.split(' ')[0]} to respond`;
+  document.getElementById('chatLog').innerHTML = `<div class="msg them">Hi! I've got your request and I'm reviewing it now.</div>`;
+  document.getElementById('simLink').style.display = 'block';
+
+  renderMap('confirmMap', [v], false);
+  drawRouteLine('confirmMap');
+
+  state.etaSeconds = null;
+  state.etaStarted = false;
+  updateEtaDisplay();
+
+  clearInterval(state.confirmPollTimer);
+  state.confirmPollTimer = setInterval(pollJobStatus, 1500);
+  pollJobStatus();
+
+  clearInterval(state.confirmNotifTimer);
+  state.confirmNotifTimer = setInterval(
+    () => pollNotifications('driver', state.driverId, 'driverNotifBadge'),
+    2000
+  );
+  pollNotifications('driver', state.driverId, 'driverNotifBadge');
+}
+
+async function pollJobStatus(){
+  if(!state.jobId) return;
+  try {
+    const res = await api(`/api/jobs/${state.jobId}`);
+    handleJobStatusUpdate(res.job);
+  } catch(err){
+    // transient network hiccup — keep polling silently
+  }
+}
+
+function handleJobStatusUpdate(job){
+  if(!document.getElementById('screen-confirm').classList.contains('active')) return;
+  const firstName = state.matchedVendor ? state.matchedVendor.name.split(' ')[0] : 'Vendor';
+
+  checkIncomingCall(
+    job.id,
+    'driver',
+    state.matchedVendor ? state.matchedVendor.name : 'Vendor',
+    state.matchedVendor ? state.matchedVendor.icon : '🔧'
+  );
+
+  switch(job.status){
+    case 'matched':
+      document.getElementById('confirmStatusText').textContent = `Request sent — waiting for ${firstName} to respond`;
+      break;
+    case 'accepted':
+      document.getElementById('confirmStatusText').textContent = `${firstName} accepted! Heading your way`;
+      if(!state.etaStarted){ state.etaStarted = true; startEtaCountdown(job.eta_minutes); }
+      break;
+    case 'en_route':
+      document.getElementById('confirmStatusText').textContent = `${firstName} is on the way`;
+      if(!state.etaStarted){ state.etaStarted = true; startEtaCountdown(job.eta_minutes); }
+      break;
+    case 'completed':
+      // Payment already happened up front (see requestVendor()), so there's
+      // no payment step left at this point — straight to rating.
+      clearInterval(state.confirmPollTimer);
+      clearInterval(state.etaTimer);
+      clearInterval(state.confirmNotifTimer);
+      document.getElementById('doneSub').textContent = `${state.matchedVendor.name} completed the job. How did it go?`;
+      go('screen-done');
+      break;
+    case 'requested':
+      clearInterval(state.confirmPollTimer);
+      clearInterval(state.etaTimer);
+      clearInterval(state.confirmNotifTimer);
+      // No toast() here — the notifications poll (pollNotifications) already
+      // surfaces a "vendor declined" toast from the server-side notification
+      // fired in POST /api/vendors/:vendorId/jobs/:jobId/decline.
+      setTimeout(()=>{ go('screen-map'); refreshNearbyVendors(); }, 900);
+      break;
+    case 'cancelled':
+      clearInterval(state.confirmPollTimer);
+      clearInterval(state.etaTimer);
+      clearInterval(state.confirmNotifTimer);
+      break;
+  }
+}
+
+// Demo/pilot mode: whatever the real ETA is (3 min or 25 min), the on-screen
+// countdown always finishes in this many real seconds, so nobody has to
+// actually wait out the vendor's ETA to see the request lifecycle complete.
+const ETA_SIMULATION_REAL_SECONDS = 30;
+const ETA_TICK_MS = 200;
+
+function startEtaCountdown(etaMinutes){
+  const totalSeconds = (etaMinutes || 5) * 60;
+  state.etaSeconds = totalSeconds;
+  const ticks = (ETA_SIMULATION_REAL_SECONDS * 1000) / ETA_TICK_MS;
+  const secondsPerTick = totalSeconds / ticks;
+  updateEtaDisplay();
+  clearInterval(state.etaTimer);
+  state.etaTimer = setInterval(()=>{
+    state.etaSeconds -= secondsPerTick;
+    if(state.etaSeconds <= 0){
+      state.etaSeconds = 0;
+      clearInterval(state.etaTimer);
+      document.getElementById('etaCountdown').textContent = 'any moment';
+      return;
+    }
+    updateEtaDisplay();
+  }, ETA_TICK_MS);
+}
+
+function updateEtaDisplay(){
+  if(state.etaSeconds == null){ document.getElementById('etaCountdown').textContent = '—'; return; }
+  const m = Math.floor(state.etaSeconds/60);
+  const s = Math.floor(state.etaSeconds%60);
+  document.getElementById('etaCountdown').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+}
+
+async function cancelRequest(){
+  clearInterval(state.confirmPollTimer);
+  clearInterval(state.etaTimer);
+  clearInterval(state.confirmNotifTimer);
+  clearInterval(state.paymentPollTimer);
+  try { await api(`/api/jobs/${state.jobId}/cancel`, { method:'POST' }); } catch(e){ /* best effort */ }
+  // If a payment had already gone through for this job (paying now happens
+  // up front, before the vendor is dispatched — see README), the server
+  // auto-refunds it on cancel; nothing extra to do here.
+  toast('Request cancelled');
+  setTimeout(()=>go('screen-landing'), 500);
+}
+
+// Real API calls made on the driver's behalf, only where the job hasn't
+// already been moved forward by an actual vendor (e.g. in a second tab).
+// This exists so the flow can be demoed solo without two browser windows.
+async function simulateVendorFlow(){
+  document.getElementById('simLink').style.display = 'none';
+  try {
+    let { job } = await api(`/api/jobs/${state.jobId}`);
+    if(job.status === 'matched'){
+      await api(`/api/vendors/${job.vendor_id}/jobs/${job.id}/accept`, { method:'POST' });
+      toast('Simulated: vendor accepted');
+    }
+    await sleep(1800);
+    ({ job } = await api(`/api/jobs/${state.jobId}`));
+    if(job.status === 'accepted'){
+      await api(`/api/vendors/${job.vendor_id}/jobs/${job.id}/status`, { method:'PATCH', body: JSON.stringify({status:'en_route'}) });
+      toast('Simulated: vendor en route');
+    }
+    await sleep(2500);
+    ({ job } = await api(`/api/jobs/${state.jobId}`));
+    if(job.status === 'en_route'){
+      await api(`/api/vendors/${job.vendor_id}/jobs/${job.id}/status`, { method:'PATCH', body: JSON.stringify({status:'completed'}) });
+      toast('Simulated: job completed');
+    }
+  } catch(err){
+    toast(err.message || 'Already progressed by a real vendor tab');
+  }
+}
+
+/* ---------------- Voice call (simulated telephony, real signaling) ----------------
+   Real call routing/masking isn't built (see README) — no actual audio/phone
+   line is involved. But the *signaling* (who's calling whom, ringing ->
+   connected -> ended/declined) is a real `calls` row in the database, polled
+   from both the driver's and vendor's existing refresh loops — so placing a
+   call on one screen genuinely shows up as incoming on the other, including
+   across two separate browser tabs/devices. */
+const callState = { durationTimer: null, seconds: 0 };
+
+async function initiateCall(myRole, jobId, peerName, peerIcon){
+  if(!jobId){ toast('No active job to call about yet'); return; }
+  if(state.activeCall){ return; } // already in a call
+  try {
+    const { call } = await api('/api/calls', { method:'POST', body: JSON.stringify({ jobId, callerType: myRole }) });
+    state.seenCallIds.add(call.id);
+    openCallModal({ callId: call.id, jobId, mode:'outgoing', peerName, peerIcon, status: call.status });
+  } catch(err){
+    toast(err.message || 'Could not start the call');
+  }
+}
+
+// Called from the driver's/vendor's existing poll loops to detect a new
+// call placed by the *other* side while this screen is open.
+async function checkIncomingCall(jobId, myRole, peerName, peerIcon){
+  if(!jobId || state.activeCall) return;
+  try {
+    const { call } = await api(`/api/calls/job/${jobId}`);
+    if(!call || call.status !== 'ringing') return;
+    if(call.caller_type === myRole) return; // that's my own outgoing call, not incoming
+    if(state.seenCallIds.has(call.id)) return; // already answered/declined this one
+    state.seenCallIds.add(call.id);
+    openCallModal({ callId: call.id, jobId, mode:'incoming', peerName, peerIcon, status:'ringing' });
+  } catch(err){ /* transient poll error — try again next tick */ }
+}
+
+function openCallModal({ callId, jobId, mode, peerName, peerIcon, status }){
+  state.activeCall = { id: callId, jobId };
+  document.getElementById('callName').textContent = peerName || 'Unknown';
+  document.getElementById('callAvatar').textContent = peerIcon || '📞';
+  document.getElementById('callTimer').textContent = '';
+  document.getElementById('callActionsOutgoing').style.display = mode === 'incoming' ? 'none' : 'block';
+  document.getElementById('callActionsIncoming').style.display = mode === 'incoming' ? 'flex' : 'none';
+  applyCallStatusUI(status);
+  document.getElementById('callModal').classList.add('show');
+
+  clearInterval(state.callWatchTimer);
+  state.callWatchTimer = setInterval(watchActiveCall, 1200);
+}
+
+function applyCallStatusUI(status){
+  const avatar = document.getElementById('callAvatar');
+  const statusEl = document.getElementById('callStatus');
+  if(status === 'ringing'){
+    avatar.classList.add('ringing');
+    statusEl.textContent = 'Ringing…';
+  } else if(status === 'connected'){
+    avatar.classList.remove('ringing');
+    statusEl.textContent = 'Connected';
+    document.getElementById('callActionsOutgoing').style.display = 'block';
+    document.getElementById('callActionsIncoming').style.display = 'none';
+    if(!callState.durationTimer){
+      callState.seconds = 0;
+      callState.durationTimer = setInterval(()=>{
+        callState.seconds++;
+        const m = Math.floor(callState.seconds/60);
+        const s = callState.seconds%60;
+        document.getElementById('callTimer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+      }, 1000);
+    }
+  }
+}
+
+// Polls the one call currently shown in the modal so this side follows
+// whatever the other side does to it (answers, declines, hangs up).
+async function watchActiveCall(){
+  if(!state.activeCall) return;
+  try {
+    const { call } = await api(`/api/calls/job/${state.activeCall.jobId}`);
+    if(!call || call.id !== state.activeCall.id) return;
+    if(call.status === 'connected') applyCallStatusUI('connected');
+    else if(call.status === 'declined') closeCallModal('Call declined');
+    else if(call.status === 'ended') closeCallModal('Call ended');
+  } catch(err){ /* transient poll error — try again next tick */ }
+}
+
+function closeCallModal(finalMessage){
+  clearInterval(state.callWatchTimer);
+  clearInterval(callState.durationTimer);
+  callState.durationTimer = null;
+  state.activeCall = null;
+  if(finalMessage){
+    document.getElementById('callStatus').textContent = finalMessage;
+    setTimeout(()=>document.getElementById('callModal').classList.remove('show'), 1100);
+  } else {
+    document.getElementById('callModal').classList.remove('show');
+  }
+}
+
+async function endCallByUser(){
+  const call = state.activeCall;
+  if(!call){ document.getElementById('callModal').classList.remove('show'); return; }
+  closeCallModal();
+  try { await api(`/api/calls/${call.id}/end`, { method:'POST' }); } catch(err){ /* best effort */ }
+}
+
+async function acceptCallByUser(){
+  if(!state.activeCall) return;
+  try {
+    await api(`/api/calls/${state.activeCall.id}/accept`, { method:'POST' });
+    applyCallStatusUI('connected');
+  } catch(err){ toast(err.message || 'Could not accept call'); }
+}
+
+async function declineCallByUser(){
+  const call = state.activeCall;
+  if(!call) return;
+  closeCallModal();
+  try { await api(`/api/calls/${call.id}/decline`, { method:'POST' }); } catch(err){ /* best effort */ }
+}
+
+function openChat(){ document.getElementById('chatModal').classList.add('show'); }
+function closeChat(){ document.getElementById('chatModal').classList.remove('show'); }
+function sendChat(){
+  const input = document.getElementById('chatInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const log = document.getElementById('chatLog');
+  log.innerHTML += `<div class="msg me">${escapeHtml(val)}</div>`;
+  input.value='';
+  log.scrollTop = log.scrollHeight;
+  setTimeout(()=>{
+    log.innerHTML += `<div class="msg them">Got it, thanks!</div>`;
+    log.scrollTop = log.scrollHeight;
+  }, 900);
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+document.addEventListener('click', e=>{
+  if(e.target.classList.contains('star')){
+    const v = +e.target.dataset.v;
+    $all('.star').forEach(s=>s.classList.toggle('on', +s.dataset.v <= v));
+  }
+});
+
+function finishDriverFlow(){
+  $all('.star').forEach(s=>s.classList.remove('on'));
+  clearInterval(state.confirmPollTimer);
+  clearInterval(state.etaTimer);
+  clearInterval(state.confirmNotifTimer);
+  clearInterval(state.paymentPollTimer);
+  state.jobId = null;
+  state.matchedVendor = null;
+  state.paymentJobId = null;
+  state.paymentId = null;
+  go('screen-landing');
+  setLandingRole('driver');
+}
+
+/* ==================== VENDOR FLOW ==================== */
+
+async function openVendorDashboard(){
+  if(!CURRENT_VENDOR_ID){
+    toast('Enter your phone number first so we know which vendor you are.');
+    return;
+  }
+  go('screen-vendor');
+  await refreshVendorDashboard();
+  clearInterval(state.vendorPollTimer);
+  state.vendorPollTimer = setInterval(refreshVendorDashboard, 3000);
+}
+
+function leaveVendorDashboard(){
+  clearInterval(state.vendorPollTimer);
+  go('screen-landing');
+}
+
+async function refreshVendorDashboard(){
+  try {
+    const [jobsRes, statsRes, vendorRes] = await Promise.all([
+      api(`/api/vendors/${CURRENT_VENDOR_ID}/jobs`),
+      api(`/api/vendors/${CURRENT_VENDOR_ID}/stats`),
+      api(`/api/vendors/${CURRENT_VENDOR_ID}`),
+    ]);
+    renderVendorStats(statsRes);
+    renderVendorAvailability(vendorRes.vendor);
+    state.vendorHasActiveJob = jobsRes.active.length > 0;
+    const activeJob = jobsRes.active[0] || null;
+    renderActiveJobFromServer(activeJob);
+    renderIncomingJobs(jobsRes.incoming);
+    pollNotifications('vendor', CURRENT_VENDOR_ID, 'vendorNotifBadge');
+    // A driver can call as soon as a job is matched, before it's accepted —
+    // check the pending job too, not just an already-active one.
+    const jobForCalls = activeJob || jobsRes.incoming[0] || null;
+    if(jobForCalls){
+      checkIncomingCall(jobForCalls.id, 'vendor', jobForCalls.driver ? jobForCalls.driver.name : 'Driver', '🚗');
+    }
+  } catch(err){
+    // keep quiet on transient poll errors so the UI doesn't flicker
+  }
+}
+
+function renderVendorStats(stats){
+  document.getElementById('vdEarnings').textContent = `KES ${Number(stats.earningsToday || 0).toLocaleString()}`;
+  document.getElementById('vdCompleted').textContent = stats.completedToday;
+  document.getElementById('vdRating').textContent = `${stats.rating} ★`;
+}
+
+function renderVendorAvailability(vendor){
+  const firstName = (vendor.name || '').split(' ')[0] || 'there';
+  document.getElementById('vendorGreeting').textContent = `Hi, ${firstName} 👋`;
+  const online = vendor.status !== 'offline';
+  document.getElementById('onlineSwitch').classList.toggle('on', online);
+  let text;
+  if(vendor.status === 'available') text = `You're online near ${vendor.neighborhood}`;
+  else if(vendor.status === 'busy') text = `You're online — on a job`;
+  else text = `You're offline`;
+  document.getElementById('vendorStatusText').textContent = text;
+}
+
+async function toggleOnline(){
+  try {
+    const { vendor } = await api(`/api/vendors/${CURRENT_VENDOR_ID}`);
+    const nextStatus = vendor.status === 'offline' ? 'available' : 'offline';
+    const res = await api(`/api/vendors/${CURRENT_VENDOR_ID}/availability`, {
+      method:'PATCH',
+      body: JSON.stringify({ status: nextStatus }),
+    });
+    renderVendorAvailability(res.vendor);
+    toast(res.vendor.status === 'available' ? 'You are now online' : 'You are now offline');
+  } catch(err){
+    toast(err.message || 'Could not update availability');
+  }
+}
+
+function renderIncomingJobs(jobs){
+  const list = document.getElementById('jobList');
+  document.getElementById('jobCount').textContent = jobs.length ? `${jobs.length} pending` : '';
+
+  if(state.vendorHasActiveJob){
+    list.innerHTML = `<div class="empty-state"><div class="icon">🔧</div>Finish your active job before accepting a new one.</div>`;
+    return;
+  }
+  if(!jobs.length){
+    list.innerHTML = `<div class="empty-state"><div class="icon">📭</div>No requests right now.<br>New jobs will appear here in real time.</div>`;
+    return;
+  }
+  list.innerHTML = jobs.map(j=>{
+    const svc = serviceMeta(j.service_type);
+    return `
+    <div class="job-card">
+      <div class="job-card-top">
+        <div class="svc"><span class="icon">${svc.icon}</span> ${svc.label}</div>
+        <div class="time-ago">${timeAgo(j.matched_at)}</div>
+      </div>
+      <div class="driver-row">
+        <div class="avatar" style="width:38px;height:38px;font-size:16px;">🧑</div>
+        <div>
+          <div class="name">${j.driver ? j.driver.name : 'Driver'}</div>
+          <div class="loc">📍 ${j.location_label || 'Nearby'}</div>
+        </div>
+      </div>
+      <div class="job-meta"><span>Distance: <b>${j.distance_km ?? '—'} km</b></span><span>Est. payout: <b>KES ${j.price_estimate ?? '—'}</b></span></div>
+      <div class="job-actions">
+        <button class="btn btn-red-outline btn-sm" onclick="declineJob(${j.id})">Decline</button>
+        <button class="btn btn-primary btn-sm" onclick="acceptJob(${j.id})">Accept</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function acceptJob(jobId){
+  try {
+    await api(`/api/vendors/${CURRENT_VENDOR_ID}/jobs/${jobId}/accept`, { method:'POST' });
+    toast('Job accepted');
+    await refreshVendorDashboard();
+  } catch(err){ toast(err.message || 'Could not accept job'); }
+}
+
+async function declineJob(jobId){
+  try {
+    await api(`/api/vendors/${CURRENT_VENDOR_ID}/jobs/${jobId}/decline`, { method:'POST' });
+    toast('Job declined');
+    await refreshVendorDashboard();
+  } catch(err){ toast(err.message || 'Could not decline job'); }
+}
+
+function renderActiveJobFromServer(job){
+  const slot = document.getElementById('activeJobSlot');
+  if(!job){ slot.innerHTML=''; return; }
+  const svc = serviceMeta(job.service_type);
+  const stageMeta = {
+    accepted: {label:'Accepted — head to pickup', next:'Mark En Route', nextStatus:'en_route'},
+    en_route: {label:'En route', next:'Mark Job Complete', nextStatus:'completed'},
+  };
+  const s = stageMeta[job.status] || stageMeta.accepted;
+  slot.innerHTML = `
+    <div class="active-job-banner">
+      <div class="stage">${s.label}</div>
+      <h4>${job.driver ? job.driver.name : 'Driver'} · ${svc.label}</h4>
+      <div class="sub">📍 ${job.location_label || 'Nearby'} · ${job.distance_km ?? '—'} km · KES ${job.price_estimate ?? '—'}</div>
+      <div class="aj-actions">
+        <button class="btn btn-outline btn-sm" onclick="initiateCall('vendor', ${job.id}, ${escapeHtml(JSON.stringify(job.driver ? job.driver.name : 'Driver'))}, '🚗')">📞 Call driver</button>
+        <button class="btn btn-green btn-sm" onclick="vendorAdvance(${job.id}, '${s.nextStatus}')">${s.next}</button>
+      </div>
+    </div>`;
+}
+
+async function vendorAdvance(jobId, nextStatus){
+  try {
+    await api(`/api/vendors/${CURRENT_VENDOR_ID}/jobs/${jobId}/status`, {
+      method:'PATCH',
+      body: JSON.stringify({ status: nextStatus }),
+    });
+    toast(nextStatus === 'completed' ? '✅ Job marked complete' : 'Status updated');
+    await refreshVendorDashboard();
+  } catch(err){ toast(err.message || 'Could not update job'); }
+}
+
+/* ==================== VENDOR SELF-REGISTRATION ==================== */
+
+function openVendorSignup(){
+  state.vsSelectedServices = new Set();
+  document.getElementById('vsServiceChips').innerHTML = SERVICES.map(s=>`
+    <div class="chip" data-id="${s.id}" onclick="toggleVsService('${s.id}')">${s.icon} ${s.label}</div>`).join('');
+  const sel = document.getElementById('vsNeighborhood');
+  sel.innerHTML = `<option value="">Select a neighborhood…</option>` +
+    NEIGHBORHOOD_POINTS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  document.getElementById('vsName').value = '';
+  document.getElementById('vsPhone').value = '';
+  document.getElementById('vsIdNumber').value = '';
+  go('screen-vendor-signup');
+}
+
+function toggleVsService(id){
+  if(state.vsSelectedServices.has(id)) state.vsSelectedServices.delete(id);
+  else state.vsSelectedServices.add(id);
+  document.querySelectorAll('#vsServiceChips .chip').forEach(c=>{
+    c.classList.toggle('selected', state.vsSelectedServices.has(c.dataset.id));
+  });
+}
+
+async function submitVendorSignup(){
+  const name = document.getElementById('vsName').value.trim();
+  const phone = document.getElementById('vsPhone').value.trim();
+  const neighborhood = document.getElementById('vsNeighborhood').value;
+  const idNumber = document.getElementById('vsIdNumber').value.trim();
+  const serviceTypes = Array.from(state.vsSelectedServices);
+
+  if(!name || !phone || !neighborhood || !idNumber || !serviceTypes.length){
+    toast('Please fill in every field and pick at least one service');
+    return;
+  }
+
+  try {
+    await api('/api/vendors', {
+      method:'POST',
+      body: JSON.stringify({ name, phone, serviceTypes, neighborhood, idNumber }),
+    });
+    go('screen-vendor-pending');
+  } catch(err){
+    toast(err.message || 'Could not submit application');
+  }
+}
+
+/* ==================== ADMIN: VENDOR APPLICATIONS ==================== */
+
+async function openAdminView(){
+  go('screen-admin');
+  await refreshAdminPending();
+}
+
+async function refreshAdminPending(){
+  try {
+    const { vendors } = await api('/api/admin/vendors?status=pending');
+    document.getElementById('adminPendingCount').textContent = vendors.length ? `${vendors.length} pending` : '';
+    const list = document.getElementById('adminPendingList');
+
+    if(!vendors.length){
+      list.innerHTML = `<div class="empty-state"><div class="icon">✅</div>No pending applications.</div>`;
+      return;
+    }
+
+    list.innerHTML = vendors.map(v=>`
+      <div class="job-card">
+        <div class="job-card-top">
+          <div class="svc">🧑‍🔧 ${v.name}</div>
+          <div class="time-ago">${timeAgo(v.created_at)}</div>
+        </div>
+        <div class="driver-row">
+          <div class="avatar" style="width:38px;height:38px;font-size:16px;">📞</div>
+          <div>
+            <div class="name">${v.phone || '—'}</div>
+            <div class="loc">📍 ${v.neighborhood || '—'}</div>
+          </div>
+        </div>
+        <div class="job-meta"><span>Services: <b>${(v.services||[]).map(s=>serviceMeta(s).label).join(', ') || '—'}</b></span></div>
+        <div class="job-meta"><span>ID/plate: <b>${v.id_number || '—'}</b></span></div>
+        <div class="job-actions">
+          <button class="btn btn-red-outline btn-sm" onclick="adminReject(${v.id})">Reject</button>
+          <button class="btn btn-primary btn-sm" onclick="adminApprove(${v.id})">Approve</button>
+        </div>
+      </div>`).join('');
+  } catch(err){
+    toast(err.message || 'Could not load applications');
+  }
+}
+
+async function adminApprove(id){
+  try {
+    await api(`/api/admin/vendors/${id}/approve`, { method:'POST' });
+    toast('Vendor approved');
+    await refreshAdminPending();
+  } catch(err){ toast(err.message || 'Could not approve'); }
+}
+
+async function adminReject(id){
+  try {
+    await api(`/api/admin/vendors/${id}/reject`, { method:'POST' });
+    toast('Vendor rejected');
+    await refreshAdminPending();
+  } catch(err){ toast(err.message || 'Could not reject'); }
+}
+
+/* ==================== NOTIFICATIONS (Phase 4) ==================== */
+// Polled in-app feed backed by the notifications table — works with zero
+// external accounts. If a real SMS/push provider is wired in later (see
+// README), this same feed still doubles as the in-app notification center.
+
+function renderNotifBadge(elId, count){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  if(count > 0){
+    el.textContent = count > 9 ? '9+' : count;
+    el.style.display = 'inline-flex';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+async function pollNotifications(recipientType, recipientId, badgeElId){
+  if(!recipientId) return [];
+  try {
+    const { notifications, unreadCount } = await api(`/api/notifications/${recipientType}/${recipientId}`);
+    renderNotifBadge(badgeElId, unreadCount);
+    notifications.forEach(n=>{
+      if(!state.seenNotificationIds.has(n.id)){
+        state.seenNotificationIds.add(n.id);
+        toast(`🔔 ${n.title}`);
+      }
+    });
+    return notifications;
+  } catch(err){
+    return []; // transient poll error — stay quiet, try again next tick
+  }
+}
+
+function openNotificationsPanel(recipientType, recipientId){
+  if(!recipientId){ toast('Nothing to show yet'); return; }
+  document.getElementById('notifModal').classList.add('show');
+  renderNotifPanel(recipientType, recipientId);
+}
+
+function closeNotifModal(){
+  document.getElementById('notifModal').classList.remove('show');
+}
+
+async function renderNotifPanel(recipientType, recipientId){
+  const list = document.getElementById('notifList');
+  try {
+    const { notifications } = await api(`/api/notifications/${recipientType}/${recipientId}`);
+    if(!notifications.length){
+      list.innerHTML = `<div style="text-align:center; color:var(--gray-light); font-size:13px; padding:20px 0;">No notifications yet.</div>`;
+    } else {
+      list.innerHTML = notifications.map(n=>`
+        <div class="notif-item" style="background:${n.read_at ? '#F5F4F1' : 'rgba(255,90,31,0.08)'};">
+          <div class="t">${n.title}</div>
+          <div class="b">${n.body || ''}</div>
+          <div class="a">${timeAgo(n.created_at)}</div>
+        </div>`).join('');
+    }
+    // Mark everything shown as read, then zero out the badge.
+    await Promise.all(
+      notifications.filter(n=>!n.read_at).map(n=>api(`/api/notifications/${n.id}/read`, { method:'POST' }).catch(()=>{}))
+    );
+    renderNotifBadge(recipientType === 'vendor' ? 'vendorNotifBadge' : 'driverNotifBadge', 0);
+  } catch(err){
+    list.innerHTML = `<div style="text-align:center; color:var(--gray-light); font-size:13px; padding:20px 0;">Could not load notifications.</div>`;
+  }
+}
+
+/* ==================== PAYMENTS (Phase 5, M-Pesa) ==================== */
+
+function setupPaymentScreen(job){
+  state.paymentJobId = job.id;
+  state.paymentAmount = job.price_estimate || 0;
+  state.paymentId = null;
+
+  document.getElementById('payAmount').textContent = `KES ${state.paymentAmount}`;
+  document.getElementById('payPhoneInput').value = '';
+  document.getElementById('payStatusArea').innerHTML = '';
+
+  const payBtn = document.getElementById('payBtn');
+  payBtn.style.display = 'block';
+  payBtn.disabled = false;
+  payBtn.textContent = `Pay KES ${state.paymentAmount} with M-Pesa`;
+  document.getElementById('payContinueBtn').style.display = 'none';
+
+  clearInterval(state.paymentPollTimer);
+}
+
+async function initiatePayment(){
+  const phone = document.getElementById('payPhoneInput').value.trim();
+  if(!phone){ toast('Enter the M-Pesa number to charge'); return; }
+
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sending STK push…';
+
+  try {
+    const { payment } = await api('/api/payments', {
+      method:'POST',
+      body: JSON.stringify({ jobId: state.paymentJobId, phone }),
+    });
+    state.paymentId = payment.id;
+
+    if(payment.status !== 'pending'){
+      renderPaymentResult(payment);
+      return;
+    }
+
+    document.getElementById('payStatusArea').innerHTML = `
+      <div style="text-align:center; padding:14px 0;">
+        <div class="pulse-ring" style="margin:0 auto 14px;"><div class="dot"></div></div>
+        <div style="font-weight:700; font-size:14px;">Check your phone</div>
+        <div style="font-size:12.5px; color:var(--gray); margin-top:4px;">Enter your M-Pesa PIN to complete the KES ${state.paymentAmount} payment.</div>
+      </div>`;
+
+    clearInterval(state.paymentPollTimer);
+    state.paymentPollTimer = setInterval(pollPaymentStatus, 1500);
+  } catch(err){
+    toast(err.message || 'Could not start payment');
+    btn.disabled = false;
+    btn.textContent = `Pay KES ${state.paymentAmount} with M-Pesa`;
+  }
+}
+
+async function pollPaymentStatus(){
+  if(!state.paymentId) return;
+  try {
+    const { payment } = await api(`/api/payments/${state.paymentId}`);
+    if(payment.status !== 'pending'){
+      clearInterval(state.paymentPollTimer);
+      renderPaymentResult(payment);
+    }
+  } catch(err){
+    // transient poll error — try again next tick
+  }
+}
+
+function renderPaymentResult(payment){
+  const area = document.getElementById('payStatusArea');
+  const payBtn = document.getElementById('payBtn');
+
+  if(payment.status === 'completed'){
+    area.innerHTML = `
+      <div style="text-align:center; padding:14px 0;">
+        <div style="font-size:38px;">✅</div>
+        <div style="font-weight:800; font-size:15px; margin-top:6px;">Payment received</div>
+        <div style="font-size:12.5px; color:var(--gray); margin-top:4px;">KES ${payment.amount} · Receipt ${payment.receipt_number || '—'}</div>
+      </div>`;
+    payBtn.style.display = 'none';
+    document.getElementById('payContinueBtn').style.display = 'block';
+    toast('🔔 Payment received');
+  } else if(payment.status === 'failed'){
+    area.innerHTML = `
+      <div style="text-align:center; padding:14px 0;">
+        <div style="font-size:38px;">⚠️</div>
+        <div style="font-weight:800; font-size:15px; margin-top:6px;">Payment failed</div>
+        <div style="font-size:12.5px; color:var(--gray); margin-top:4px;">Nothing was charged. You can try again.</div>
+      </div>`;
+    payBtn.style.display = 'block';
+    payBtn.disabled = false;
+    payBtn.textContent = `Retry — Pay KES ${state.paymentAmount} with M-Pesa`;
+  }
+}
+
+function continueAfterPayment(){
+  // Payment confirmed the booking — the vendor's just been notified (see
+  // completePayment() server-side), so now the driver actually tracks the
+  // job, same as the old "waiting for vendor" screen.
+  clearInterval(state.paymentPollTimer);
+  go('screen-confirm');
+  setupConfirmScreen();
+}
+
+/* init */
+buildServiceGrid();
+</script>
+</body>
+</html>
